@@ -113,7 +113,7 @@ pub fn apply_forward_impulse(
     mut query: Query<(&mut ExternalImpulse, &Transform), With<Goopie>>,
 ) {
     for (mut ext_impulse, transform) in query.iter_mut() {
-        let forward = transform.rotation * Vec3::Y;
+        let forward = transform.rotation * Vec3::X;
         let impulse = forward * 100.0; // Adjust the impulse strength as needed
         // println!("Applying impulse: {:?}", impulse);
         ext_impulse.impulse = impulse.truncate();
