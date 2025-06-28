@@ -1,11 +1,11 @@
+use crate::{asset_loader::SceneAssets, GRAVITY};
 use bevy::prelude::*;
 use rand::prelude::*;
-use crate::collider::Collider;
-use crate::asset_loader::SceneAssets;
-use crate::moving_object::{MovingObjectBundle, Velocity};
+use bevy_rapier2d::prelude::*;
 
 const FOOD_RADIUS: f32 = 10.0; // Size of the Food sprite
 const FOOD_Z_INDEX: f32 = 0.0; // Z-index for rendering Food
+const FOOD_DENSITY: f32 = 0.7; // Density of Food for physics simulation
 
 #[derive(Component, Debug, Clone, Copy)]
 pub struct Food;
@@ -42,17 +42,20 @@ pub fn spawn_food(commands: &mut Commands, scene_assets: &Res<SceneAssets>, tran
     let mut rng = rand::rng();
     let angle = rng.random_range(0.0..std::f32::consts::PI * 2.0);
     commands.spawn((
-        MovingObjectBundle {
-            sprite: scene_assets.food_sprite.clone(),
-            transform: Transform {
-                translation: translation.extend(FOOD_Z_INDEX),
-                rotation: Quat::from_rotation_z(angle),
-                scale: Vec2::new(FOOD_RADIUS, FOOD_RADIUS).extend(1.0),
-            },
-            collider: Collider,
-            velocity: Velocity {
-                speed: Vec2::new(0.0, 0.0), // Food starts stationary
-            },
+        RigidBody::Dynamic,
+        scene_assets.food_sprite.clone(),
+        Collider::ball(1.0),
+        ColliderMassProperties::Density(FOOD_DENSITY),
+        Transform {
+            translation: translation.extend(FOOD_Z_INDEX),
+            rotation: Quat::from_rotation_z(angle),
+            scale: Vec2::new(FOOD_RADIUS, FOOD_RADIUS).extend(1.0),
+        },
+        Velocity::zero(),
+        GravityScale(GRAVITY),
+        Damping {
+            linear_damping: 0.1,
+            angular_damping: 0.1,
         },
         Food,
     ));
